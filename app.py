@@ -9,6 +9,8 @@ from sqlalchemy import create_engine, func
 from flask import Flask, jsonify
 
 
+# I did a majority of this assignment with the aid of a Bootcamp tutor
+
 #################################################
 # Database Setup
 #################################################
@@ -42,6 +44,7 @@ def welcome():
         f"/api/v1.0/precipitation <br/>"
         f"/api/v1.0/stations <br/>"
         f"/api/v1.0/tobs"
+        f"/api/v1.0/<start>"
     )
 
 
@@ -100,7 +103,20 @@ def tobs():
     results_list = list(np.ravel(results))
     return jsonify(results_list)
     
+@app.route("/api/v1.0/start>")
+def start_date(start):
+    # Link session from Python
+    session = Session(engine)
 
+    results = session.query(func.min(Measurement.tobs),
+                            func.max(Measurement.tobs),
+                            func.avg(Measurement.tobs))\
+                    .filter(Measurement.date >= start).all()
 
+    first_date = session.query(Measurement.date).order_by(Measurement.date).first()
+
+    last_date = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
+
+    session.close()
 if __name__ == '__main__':
     app.run(debug=True)
